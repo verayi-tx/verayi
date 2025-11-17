@@ -409,11 +409,7 @@ const GmailClone = () => {
             setCurrentDraftId(result.id);
           }
           
-          // Trigger refresh of drafts view if currently viewing drafts
-          if (currentMailbox === 'drafts') {
-            setCurrentMailbox(''); // Force reload
-            setTimeout(() => setCurrentMailbox('drafts'), 0);
-          }
+          // Don't refresh drafts view while composing - causes modal to flicker
         }, 1000); // Save 1 second after user stops typing
 
         return () => clearTimeout(timeoutId);
