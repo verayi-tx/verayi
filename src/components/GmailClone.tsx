@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Star, Clock, Send, FileText, AlertCircle, Trash2, Archive, RefreshCw, MoreVertical, Search, Menu, Settings, HelpCircle, Grid, ChevronLeft, ChevronRight, Printer, ExternalLink, Reply, Forward, ArrowLeft, X, Minimize2, Maximize2, Plus } from 'lucide-react';
+import { Mail, Star, Clock, Send, FileText, AlertCircle, Trash2, Archive, RefreshCw, MoreVertical, Search, Menu, Settings, HelpCircle, Grid, ChevronLeft, ChevronRight, Printer, ExternalLink, Reply, Forward, ArrowLeft, X, Minus, Maximize2, Plus } from 'lucide-react';
 import { loadInbox, loadDrafts, loadSent, saveDraft, sendDraft, isOwner, getSessionId, getMailboxCounts } from '../lib/api';
 
 interface Email {
@@ -19,6 +19,7 @@ interface ComposeWindow {
   id: string;
   draftId: string | null;
   isMinimized: boolean;
+  subject?: string;
 }
 
 const GmailClone = () => {
@@ -540,7 +541,7 @@ const GmailClone = () => {
 
     const handleMinimize = () => {
       setComposeWindows(prev => prev.map(w => 
-        w.id === windowId ? { ...w, isMinimized: true } : w
+        w.id === windowId ? { ...w, isMinimized: true, subject } : w
       ));
     };
 
@@ -568,7 +569,7 @@ const GmailClone = () => {
         <div className="bg-gray-800 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
           <span className="font-medium">{draftId ? 'Edit Draft' : 'New Message'}</span>
           <div className="flex items-center gap-3">
-            <Minimize2 
+            <Minus 
               onClick={handleMinimize}
               className="w-4 h-4 cursor-pointer hover:bg-gray-700 rounded p-0.5" 
             />
@@ -830,7 +831,7 @@ const GmailClone = () => {
               <MinimizedCompose 
                 key={window.id}
                 windowId={window.id}
-                subject={window.draftId ? 'Draft' : 'New Message'}
+                subject={window.subject || 'New Message'}
               />
             ))}
         </div>
