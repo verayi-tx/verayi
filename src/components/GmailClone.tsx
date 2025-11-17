@@ -15,10 +15,14 @@ interface Email {
   selected?: boolean;
 }
 
+interface ComposeWindow {
+  id: string;
+  draftId: string | null;
+  isMinimized: boolean;
+}
+
 const GmailClone = () => {
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [isComposing, setIsComposing] = useState(false);
-  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState('primary');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeSection, setActiveSection] = useState('inbox');
@@ -34,6 +38,10 @@ const GmailClone = () => {
     spam: 0,
     trash: 0
   });
+  
+  // Manage multiple compose windows (max 4 minimized)
+  const [composeWindows, setComposeWindows] = useState<ComposeWindow[]>([]);
+  const [activeComposeId, setActiveComposeId] = useState<string | null>(null);
 
   // Load mailbox counts on mount and when mailbox changes
   const loadCounts = async () => {
@@ -118,8 +126,21 @@ const GmailClone = () => {
   const handleEmailClick = (email: Email) => {
     // If it's a draft, open Compose modal with that draft ID
     if (email.category === 'drafts') {
-      setEditingDraftId(String(email.id));
-      setIsComposing(true);
+      const newId = crypto.randomUUID();
+      setComposeWindows(prev => {
+        // Limit to 4 total windows - remove oldest minimized if at limit
+        if (prev.length >= 4) {
+          const firstMinimized = prev.find(w => w.isMinimized);
+          if (firstMinimized) {
+            prev = prev.filter(w => w.id !== firstMinimized.id);
+          } else {
+            // If no minimized, just don't open new window
+            return prev;
+          }
+        }
+        return [...prev, { id: newId, draftId: String(email.id), isMinimized: false }];
+      });
+      setActiveComposeId(newId);
     } else {
       setSelectedEmail(email);
     }
@@ -161,8 +182,21 @@ const GmailClone = () => {
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <button
         onClick={() => {
-          setEditingDraftId(null); // null means new draft
-          setIsComposing(true);
+          const newId = crypto.randomUUID();
+          setComposeWindows(prev => {
+            // Limit to 4 total windows - remove oldest minimized if at limit
+            if (prev.length >= 4) {
+              const firstMinimized = prev.find(w => w.isMinimized);
+              if (firstMinimized) {
+                prev = prev.filter(w => w.id !== firstMinimized.id);
+              } else {
+                // If no minimized, just don't add new window
+                return prev;
+              }
+            }
+            return [...prev, { id: newId, draftId: null, isMinimized: false }];
+          });
+          setActiveComposeId(newId);
         }}
         className="m-4 bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-full shadow-md flex items-center"
       >
@@ -358,23 +392,24 @@ const GmailClone = () => {
     </div>
   );
 
-  const ComposeWindow = () => {
+  const ComposeWindow = ({ windowId, draftId, isMinimized }: { windowId: string; draftId: string | null; isMinimized: boolean }) => {
     const [to, setTo] = useState('');
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
+    const [currentDraftId, setCurrentDraftId] = useState<string | null>(draftId);
+    const [isMaximized, setIsMaximized] = useState(false);
 
-    // Load existing draft when modal opens (if editingDraftId is set)
+    // Load existing draft when modal opens (if draftId is set)
     useEffect(() => {
       const loadDraft = async () => {
-        if (editingDraftId) {
+        if (draftId) {
           // Load specific draft by ID (only if it belongs to this session)
           const { data, error } = await (await import('../lib/supabase')).supabase
             .from('drafts')
             .select('*')
-            .eq('id', editingDraftId)
+            .eq('id', draftId)
             .eq('session_id', getSessionId()) // Security: only load own drafts
             .single();
           
@@ -382,7 +417,7 @@ const GmailClone = () => {
             setTo(data.to || '');
             setSubject(data.subject || '');
             setBody(data.body || '');
-            setCurrentDraftId(editingDraftId);
+            setCurrentDraftId(draftId);
           }
         } else {
           // Creating new draft - start fresh
@@ -447,7 +482,8 @@ const GmailClone = () => {
         });
         
         if (result) {
-          setIsComposing(false);
+          // Close this compose window
+          setComposeWindows(prev => prev.filter(w => w.id !== windowId));
           alert(isOwner() ? 'Message sent to Inbox!' : 'Message sent!');
           setTo('');
           setSubject('');
@@ -498,24 +534,50 @@ const GmailClone = () => {
       setTo('');
       setSubject('');
       setBody('');
-      setIsComposing(false);
+      // Close this compose window
+      setComposeWindows(prev => prev.filter(w => w.id !== windowId));
     };
 
+    const handleMinimize = () => {
+      setComposeWindows(prev => prev.map(w => 
+        w.id === windowId ? { ...w, isMinimized: true } : w
+      ));
+    };
+
+    const handleMaximize = () => {
+      setIsMaximized(!isMaximized);
+    };
+
+    const handleClose = () => {
+      setComposeWindows(prev => prev.filter(w => w.id !== windowId));
+    };
+
+    if (isMinimized) {
+      return null; // Don't render full window if minimized
+    };
+
+    const isFocused = windowId === activeComposeId;
+    
     return (
-      <div className="fixed bottom-0 right-8 w-[600px] bg-white rounded-t-lg shadow-2xl z-50">
+      <div className={`fixed bg-white rounded-t-lg shadow-2xl transition-all ${
+        isMaximized 
+          ? 'inset-4 bottom-0 z-50' 
+          : 'bottom-0 right-8 w-[600px] max-h-[600px]'
+      } ${isFocused ? 'z-50' : 'z-40'}`}
+           onClick={() => setActiveComposeId(windowId)}>
         <div className="bg-gray-800 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
-          <span className="font-medium">{editingDraftId ? 'Edit Draft' : 'New Message'}</span>
+          <span className="font-medium">{draftId ? 'Edit Draft' : 'New Message'}</span>
           <div className="flex items-center gap-3">
             <Minimize2 
-              onClick={() => console.log('Minimize compose')}
+              onClick={handleMinimize}
               className="w-4 h-4 cursor-pointer hover:bg-gray-700 rounded p-0.5" 
             />
             <Maximize2 
-              onClick={() => console.log('Maximize compose')}
+              onClick={handleMaximize}
               className="w-4 h-4 cursor-pointer hover:bg-gray-700 rounded p-0.5" 
             />
             <X 
-              onClick={() => setIsComposing(false)} 
+              onClick={handleClose} 
               className="w-4 h-4 cursor-pointer hover:bg-gray-700 rounded p-0.5" 
             />
           </div>
@@ -571,6 +633,33 @@ const GmailClone = () => {
             />
           </div>
         </div>
+      </div>
+    );
+  };
+
+  const MinimizedCompose = ({ windowId, subject }: { windowId: string; subject: string }) => {
+    const handleRestore = () => {
+      setComposeWindows(prev => prev.map(w => 
+        w.id === windowId ? { ...w, isMinimized: false } : w
+      ));
+      setActiveComposeId(windowId);
+    };
+
+    const handleClose = () => {
+      setComposeWindows(prev => prev.filter(w => w.id !== windowId));
+    };
+
+    return (
+      <div className="bg-gray-800 text-white px-4 py-2 rounded-t-lg flex items-center justify-between w-60 cursor-pointer hover:bg-gray-700"
+           onClick={handleRestore}>
+        <span className="text-sm truncate">{subject || 'New Message'}</span>
+        <X 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose();
+          }} 
+          className="w-4 h-4 flex-shrink-0 hover:bg-gray-600 rounded" 
+        />
       </div>
     );
   };
@@ -722,7 +811,30 @@ const GmailClone = () => {
         </div>
       </div>
 
-      {isComposing && <ComposeWindow />}
+      {/* Render all compose windows */}
+      {composeWindows.map((window) => (
+        <ComposeWindow 
+          key={window.id}
+          windowId={window.id}
+          draftId={window.draftId}
+          isMinimized={window.isMinimized}
+        />
+      ))}
+
+      {/* Minimized compose windows bar */}
+      {composeWindows.filter(w => w.isMinimized).length > 0 && (
+        <div className="fixed bottom-0 right-8 flex gap-2 z-40">
+          {composeWindows
+            .filter(w => w.isMinimized)
+            .map((window) => (
+              <MinimizedCompose 
+                key={window.id}
+                windowId={window.id}
+                subject={window.draftId ? 'Draft' : 'New Message'}
+              />
+            ))}
+        </div>
+      )}
     </div>
   );
 };
