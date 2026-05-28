@@ -1,23 +1,25 @@
 :root {
   color-scheme: dark;
   --bg: #1c1814;
-  --bg-mid: #251f1a;
-  --bg-surface: #302821;
-  --bg-raised: #3a3028;
-  --text: #eee4d4;
-  --text-2: #b9aa95;
-  --text-3: #8e7f6d;
-  --line: rgba(238, 228, 212, 0.14);
-  --line-strong: rgba(238, 228, 212, 0.26);
-  --shadow: rgba(0, 0, 0, 0.42);
+  --bg-mid: #221e19;
+  --bg-surface: #2a2520;
+  --bg-raised: #312c26;
+  --text: #e8e0d0;
+  --text-2: #a89880;
+  --text-3: #6a5e50;
+  --text-4: #3d352c;
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --shadow: rgba(0, 0, 0, 0.4);
   --now: #7ab8a4;
-  --taste: #c4855a;
-  --memory: #9b7ab8;
+  --memory: #c4855a;
+  --taste: #9b7ab8;
   --momentum: #6b94c4;
   --people: #c47a6b;
   --display: "Cormorant Garamond", Georgia, serif;
   --body: "Spectral", Georgia, serif;
-  --mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
+  --mono: "DM Mono", "Courier New", monospace;
+  --ease: 180ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -38,6 +40,8 @@ body {
   font-size: 16px;
   font-weight: 300;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 button,
@@ -80,7 +84,7 @@ button {
   gap: 20px;
   padding: 16px clamp(18px, 4vw, 54px);
   border-bottom: 1px solid var(--line);
-  background: rgba(28, 24, 20, 0.88);
+  background: rgba(28, 24, 20, 0.92);
   backdrop-filter: blur(18px);
 }
 
@@ -115,7 +119,7 @@ button {
 
 .nav-links button {
   color: var(--text-3);
-  transition: color 160ms ease;
+  transition: color var(--ease);
 }
 
 .nav-links button:hover,
@@ -279,7 +283,7 @@ h1 {
 }
 
 .entry-card h2 {
-  margin: 44px 0 13px;
+  margin: 42px 0 13px;
   font-family: var(--display);
   font-size: clamp(28px, 3vw, 42px);
   font-style: italic;
