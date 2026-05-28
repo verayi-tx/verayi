@@ -1,13 +1,135 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vera Yi - Personal Website</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Verayi</title>
+    <meta
+      name="description"
+      content="The personal site of Verayi: work, notes, favorites, projects, and small traces of what is becoming."
+    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Mono:wght@300;400&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div class="site-shell">
+      <header class="masthead" aria-label="Primary">
+        <a class="wordmark" href="#top" aria-label="Verayi home">Verayi</a>
+        <nav class="nav-links">
+          <a href="#about">Self</a>
+          <a href="#favorites">Favorites</a>
+          <a href="#working-on">Working on</a>
+          <a href="#done">Done</a>
+          <a href="#notes">Notes</a>
+        </nav>
+        <a class="contact-link" href="mailto:hello@example.com">contact</a>
+      </header>
+
+      <main id="top">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="constellation" aria-hidden="true">
+            <span class="node now"></span>
+            <span class="node taste"></span>
+            <span class="node memory"></span>
+            <span class="node momentum"></span>
+            <span class="node people"></span>
+          </div>
+          <p class="eyebrow">A personal index</p>
+          <h1 id="hero-title">A living portrait of what I am making, noticing, and becoming.</h1>
+          <p class="hero-copy">
+            I am Verayi. This is a place for the work, favorites, fragments, questions, and finished things
+            that do not fit neatly anywhere else. The details are meant to change as the site becomes more mine.
+          </p>
+        </section>
+
+        <section class="band intro-band" id="about" aria-labelledby="about-title">
+          <div class="section-kicker">Self</div>
+          <div class="intro-grid">
+            <h2 id="about-title">I like work that feels intimate, useful, and slightly strange.</h2>
+            <div class="intro-copy">
+              <p>
+                I am building a personal archive here: part website, part notebook, part public memory.
+                The format is intentionally flexible so it can hold polished projects next to smaller traces.
+              </p>
+              <p>
+                The site is organized like a portrait instead of a resume. Favorites sit next to work in
+                progress; completed things sit next to open questions.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="portrait-map" aria-label="Portrait layers">
+          <article class="layer-card" data-layer="now">
+            <span class="dot"></span>
+            <p class="label">Now</p>
+            <h3>What has my attention</h3>
+            <p>Current obsessions, active experiments, and the decisions shaping the week.</p>
+          </article>
+          <article class="layer-card" data-layer="taste">
+            <span class="dot"></span>
+            <p class="label">Taste</p>
+            <h3>What I return to</h3>
+            <p>Books, songs, images, rooms, tools, meals, and other small loyalties.</p>
+          </article>
+          <article class="layer-card" data-layer="momentum">
+            <span class="dot"></span>
+            <p class="label">Momentum</p>
+            <h3>What I am building</h3>
+            <p>Projects, prototypes, drafts, research threads, and early-stage ideas.</p>
+          </article>
+          <article class="layer-card" data-layer="memory">
+            <span class="dot"></span>
+            <p class="label">Memory</p>
+            <h3>What made me</h3>
+            <p>Past work, milestones, places, lessons, and things worth carrying forward.</p>
+          </article>
+        </section>
+
+        <section class="band" id="favorites" aria-labelledby="favorites-title">
+          <div class="section-heading">
+            <p class="section-kicker">Favorites</p>
+            <h2 id="favorites-title">A small cabinet of recurring taste.</h2>
+          </div>
+          <div class="entry-list" id="favorites-list"></div>
+        </section>
+
+        <section class="band split-band" id="working-on" aria-labelledby="working-title">
+          <div class="section-heading sticky-heading">
+            <p class="section-kicker">Working on</p>
+            <h2 id="working-title">Live threads, drafts, and projects in motion.</h2>
+          </div>
+          <div class="timeline" id="working-list"></div>
+        </section>
+
+        <section class="band" id="done" aria-labelledby="done-title">
+          <div class="section-heading">
+            <p class="section-kicker">Done</p>
+            <h2 id="done-title">Selected proof that something became real.</h2>
+          </div>
+          <div class="work-grid" id="done-list"></div>
+        </section>
+
+        <section class="band notes-band" id="notes" aria-labelledby="notes-title">
+          <div>
+            <p class="section-kicker">Notes</p>
+            <h2 id="notes-title">Loose thoughts with room to connect later.</h2>
+          </div>
+          <div class="notes-grid" id="notes-list"></div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Verayi</p>
+        <p>Made as a living personal site. Last shaped in 2026.</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
   </body>
 </html>
